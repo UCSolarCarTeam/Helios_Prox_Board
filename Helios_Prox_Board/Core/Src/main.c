@@ -27,6 +27,14 @@
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 
+// This is a structure that represents an ultrasonic sensor information
+typedef struct{
+  GPIO_TypeDef *trig_port; // Pointer to the trigger pin port
+  uint16_t trig_pin;       // Trigger pin number
+  GPIO_TypeDef *echo_port; // Pointer to the echo pin port
+  uint16_t echo_pin;      // Echo pin number
+} UltrasonicSensor;
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -42,13 +50,22 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+UltrasonicSensor sensors[] = {
+    {GPIOB, GPIO_PIN_1, GPIOB, GPIO_PIN_2},  // Sensor 1
+    {GPIOB, GPIO_PIN_4, GPIOB, GPIO_PIN_5},  // Sensor 2
+    {GPIOB, GPIO_PIN_7, GPIOB, GPIO_PIN_8},  // Sensor 3
+    {GPIOB, GPIO_PIN_10, GPIOB, GPIO_PIN_11} // Sensor 4
+};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-/* USER CODE BEGIN PFP */
+static void MX_GPIO_Init(void);
 
+/* USER CODE BEGIN PFP */
+void trigger_sensor(UltrasonicSensor sensor); // Function to trigger the ultrasonic sensor to transmit a pulse
+uint32_t measure_pulse(UltrasonicSensor sensor); // Function to measure the pulse duration of the echo signal
+float calculate_distance(uint32_t pulse_duration); // Function to calculate the distance based on the pulse duration
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -84,6 +101,7 @@ int main(void)
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
+  MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -138,6 +156,41 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief GPIO Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_GPIO_Init(void)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+/* USER CODE BEGIN MX_GPIO_Init_1 */
+/* USER CODE END MX_GPIO_Init_1 */
+
+  /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_6, GPIO_PIN_RESET);
+
+  /*Configure GPIO pins : PB1 PB13 PB14 PB6 */
+  GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_6;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PB2 PB12 PB15 PB7 */
+  GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_12|GPIO_PIN_15|GPIO_PIN_7;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+/* USER CODE BEGIN MX_GPIO_Init_2 */
+/* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
